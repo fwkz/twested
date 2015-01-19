@@ -46,6 +46,7 @@ class Reactor(object):
                 try:
                     errback.execute(self.driver, scenario)
                 except:
+                    self.stop()
                     raise Exception("There is no proper handler for page {}".format(current_page))
 
             # previous_page = current_page
@@ -59,4 +60,12 @@ class Reactor(object):
             try:
                 errback.execute(self.driver, scenario)
             except:
-                raise LookupError("There is no proper callback for page {}".format(current_page))
+                self.stop()
+                raise Exception("There is no proper handler for page {}".format(current_page))
+        else:
+            self.stop()
+
+    def stop(self):
+        self.driver.quit()
+        self.callback_chain.clear()
+        self.errback_chain.clear()
