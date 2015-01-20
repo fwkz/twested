@@ -11,14 +11,14 @@ class Reactor(object):
 
     def add_callback(self, callback):
         self.callback_chain.append(callback)
-        self.errback_chain.append(None)
+        self.errback_chain.append(CallbackMock)
 
     def add_callbacks(self, callback, errback):
         self.callback_chain.append(callback)
         self.errback_chain.append(errback)
 
     def add_errback(self, errback):
-        self.callback_chain.append(None)
+        self.callback_chain.append(CallbackMock)
         self.errback_chain.append(errback)
 
     def add_both(self, callback):
@@ -31,41 +31,39 @@ class Reactor(object):
         Check which Page Object is loaded into webdriver and execute handler that it tied with it.
         """
 
-        # Navigate to starting point.
         self.driver.navigate(entry_url)
 
-        # Define current url for the first time.
-        current_page = self.driver.current_url
-
-        while current_page != self.callback_chain[-1]:  # Run until get to the exit point.
-            callback = self.callback_chain.popleft()  # Handle the current page.
+        while self.callback_chain:
+            callback = self.callback_chain.popleft()
             errback = self.errback_chain.popleft()
-            try:
-                callback.execute(self.driver, scenario)
-            except:
+            currently_loaded_page_url = self.driver.current_url.lower()
+
+            if callback.path.lower() in currently_loaded_page_url:
                 try:
-                    errback.execute(self.driver, scenario)
+                    callback(self.driver.driver, scenario).execute()
                 except:
                     self.stop()
-                    raise Exception("There is no proper handler for page {}".format(current_page))
-
-            # previous_page = current_page
-            current_page = self.driver.current_url  # Get the current location.
-
-        callback = self.callback_chain.popleft()  # Handle the current page.
-        errback = self.errback_chain.popleft()
-        try:
-            callback.execute(self.driver, scenario)
-        except:
-            try:
-                errback.execute(self.driver, scenario)
-            except:
+                    raise
+            elif errback.path.lower() in currently_loaded_page_url:
+                try:
+                    errback(self.driver.driver, scenario).execute()
+                except:
+                    self.stop()
+                    raise
+            else:
                 self.stop()
-                raise Exception("There is no proper handler for page {}".format(current_page))
-        else:
-            self.stop()
+                raise Exception("There is no proper handler for page {}\n\n"
+                                "Current callback: {}".format(currently_loaded_page_url, callback))
+        self.stop()
 
     def stop(self):
         self.driver.quit()
         self.callback_chain.clear()
         self.errback_chain.clear()
+
+
+class CallbackMock(object):
+    path = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'  # String that is not suppose to match anything
+
+    def execute(self):
+        pass
