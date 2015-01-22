@@ -2,9 +2,9 @@ from collections import deque
 
 
 class Reactor(object):
-    def __init__(self, driver_adapter=None):
-        self.driver = driver_adapter()
-        self.entry_url = None
+    def __init__(self, driver_adapter):
+        self.driver_adapter = driver_adapter
+        self.driver = None
 
         self.callback_chain = deque()
         self.errback_chain = deque()
@@ -30,7 +30,7 @@ class Reactor(object):
 
         Check which Page Object is loaded into webdriver and execute handler that it tied with it.
         """
-
+        self.driver = self.driver_adapter()
         self.driver.navigate(entry_url)
 
         while self.callback_chain:
@@ -38,18 +38,21 @@ class Reactor(object):
             errback = self.errback_chain.popleft()
             currently_loaded_page_url = self.driver.current_url.lower()
 
-            if callback.path.lower() in currently_loaded_page_url:
+            if callback.path.lower() in currently_loaded_page_url and all(x in self.driver.page_source for x in callback.identifier):
                 try:
-                    callback(self.driver.driver, scenario).execute()
+                    callback(self.driver, scenario).execute()
                 except:
                     self.stop()
                     raise
-            elif errback.path.lower() in currently_loaded_page_url:
+            elif errback.path.lower() in currently_loaded_page_url and all(x in self.driver.page_source for x in errback.identifier):
                 try:
-                    errback(self.driver.driver, scenario).execute()
+                    errback(self.driver, scenario).execute()
                 except:
-                    self.stop()
                     raise
+                else:
+                    raise Exception("Errback {} was triggered!".format(errback))
+                finally:
+                    self.stop()
             else:
                 self.stop()
                 raise Exception("There is no proper handler for page {}\n\n"
@@ -64,6 +67,7 @@ class Reactor(object):
 
 class CallbackMock(object):
     path = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'  # String that is not suppose to match anything
+    identifier = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
 
     def execute(self):
         pass
