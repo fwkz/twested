@@ -22,6 +22,9 @@ class Selenium(BaseDriverAdapter):
         from selenium import webdriver
         self.driver = webdriver.Firefox()
 
+    def __getattr__(self, item):
+        return getattr(self.driver, item)
+
     def navigate(self, url):
         self.driver.get(url)
 
