@@ -37,14 +37,18 @@ class Reactor(object):
             callback = self.callback_chain.popleft()
             errback = self.errback_chain.popleft()
             currently_loaded_page_url = self.driver.current_url.lower()
+            currently_loaded_page_body = self.driver.response_body
 
-            if callback.path.lower() in currently_loaded_page_url and all(x in self.driver.page_source for x in callback.identifier):
+            match = lambda callback: callback.path.lower() in currently_loaded_page_url and\
+                                     all(element in currently_loaded_page_body for element in callback.identifier)
+
+            if match(callback):
                 try:
                     callback(self.driver, scenario).execute()
                 except:
                     self.stop()
                     raise
-            elif errback.path.lower() in currently_loaded_page_url and all(x in self.driver.page_source for x in errback.identifier):
+            elif match(errback):
                 try:
                     errback(self.driver, scenario).execute()
                 except:
