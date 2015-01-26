@@ -1,4 +1,4 @@
-from collections import deque
+from collections import deque, Iterable
 
 
 class Reactor(object):
@@ -36,6 +36,7 @@ class Reactor(object):
         while self.callback_chain:
             callback = self.callback_chain.popleft()
             errback = self.errback_chain.popleft()
+            errback = errback if isinstance(errback, Iterable) else (errback, )  # Errback is always in form of tuple
             currently_loaded_page_url = self.driver.current_url.lower()
             currently_loaded_page_body = self.driver.response_body
 
@@ -48,13 +49,14 @@ class Reactor(object):
                 except:
                     self.stop()
                     raise
-            elif match(errback):
+            elif any([match(err) for err in errback]):
+                actual_errback = errback[[match(err) for err in errback].index(True)]
                 try:
-                    errback(self.driver, scenario).execute()
+                    actual_errback(self.driver, scenario).execute()
                 except:
                     raise
                 else:
-                    raise Exception("Errback {} was triggered!".format(errback))
+                    raise Exception("Errback {} was triggered!".format(actual_errback))
                 finally:
                     self.stop()
             else:
