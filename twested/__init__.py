@@ -71,9 +71,17 @@ class Reactor(object):
         self.errback_chain.clear()
 
 
+class NonEqualAttribute(object):
+    def __eq__(self, other):
+        return False
+
+    def __nq__(self, other):
+        return True
+
+
 class CallbackMock(object):
-    path = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'  # String that is not suppose to match anything
-    identifier = '!"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
+    path = NonEqualAttribute()
+    identifier = NonEqualAttribute()
 
     def execute(self):
         pass
