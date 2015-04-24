@@ -26,7 +26,7 @@ class Reactor(object):
         self.callback_chain.append(callback)
         self.errback_chain.append(callback)
 
-    def run(self, entry_url, scenario=None):
+    def run(self, entry_url, context=None):
         """ Main Reactor body.
 
         Check which Page Object is loaded into webdriver and execute handler that it tied with it.
@@ -46,14 +46,14 @@ class Reactor(object):
 
             if match(callback):
                 try:
-                    callback(self.driver, scenario).execute()
+                    callback(self.driver, context).execute()
                 except:
                     self.stop()
                     raise
             elif any([match(err) for err in errback]):
                 actual_errback = errback[[match(err) for err in errback].index(True)]
                 try:
-                    actual_errback(self.driver, scenario).execute()
+                    actual_errback(self.driver, context).execute()
                 except:
                     raise
                 else:

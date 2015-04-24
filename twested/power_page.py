@@ -28,9 +28,9 @@ class PowerPage(object):
     """
     __metaclass__ = IdentifierProcessorMetaclass
 
-    def __init__(self, driver, scenario):
+    def __init__(self, driver, context):
         self.driver = driver
-        self.scenario = scenario
+        self.context = context
 
     def execute(self):
         raise NotImplemented("Actions have to overwrite this method!")
