@@ -1,9 +1,10 @@
 import re
 
 
-class IdentifierAggregatorMetaclass(type):
+class IdentifierProcessorMetaclass(type):
     """
-    Metaclass for Page object's base class that is aggregating *identifier* attribute from all parent classes.
+    Metaclass that is aggregating *identifier* attributes from all
+    parent classes and transform it into regular expressions patterns
     """
     def __new__(cls, clsname, bases, dct):
         for base in bases:
@@ -18,15 +19,18 @@ class IdentifierAggregatorMetaclass(type):
         except KeyError:
             pass
 
-        return super(IdentifierAggregatorMetaclass, cls).__new__(cls, clsname, bases, dct)
+        return super(IdentifierProcessorMetaclass, cls).__new__(cls, clsname, bases, dct)
 
 
 class PowerPage(object):
     """
     Base class for Page Objects
     """
-    __metaclass__ = IdentifierAggregatorMetaclass
+    __metaclass__ = IdentifierProcessorMetaclass
 
     def __init__(self, driver, scenario):
         self.driver = driver
         self.scenario = scenario
+
+    def execute(self):
+        raise NotImplemented("Actions have to overwrite this method!")

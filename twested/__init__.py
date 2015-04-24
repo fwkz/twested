@@ -1,3 +1,4 @@
+import re
 from collections import deque, Iterable
 
 
@@ -41,7 +42,7 @@ class Reactor(object):
             currently_loaded_page_body = self.driver.response_body
 
             match = lambda callback: callback.path.lower() in currently_loaded_page_url and\
-                                     all(element in currently_loaded_page_body for element in callback.identifier)
+                                     all(re.search(element, currently_loaded_page_body) for element in callback.identifier)
 
             if match(callback):
                 try:
@@ -75,7 +76,7 @@ class NonEqualAttribute(object):
     def __eq__(self, other):
         return False
 
-    def __nq__(self, other):
+    def __ne__(self, other):
         return True
 
 
