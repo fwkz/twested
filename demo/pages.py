@@ -6,7 +6,7 @@ class Homepage(PowerPage):
     identifier = ['Build software better, together.']
 
     def search(self, phrase):
-        element = self.driver.find_element_by_xpath("html/body/div[1]/div[1]/div/div[2]/form/input")
+        element = self.driver.find_element_by_css_selector(".js-site-search-focus")
         element.send_keys(phrase)
 
 
