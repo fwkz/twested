@@ -26,7 +26,7 @@ class NoResultFound(NoSearchResult):
 if __name__ == "__main__":
     context = {"search_phrase": "tested\n"}
 
-    driver = Selenium
+    driver = Selenium()
     reactor = Reactor(driver)
     reactor.add_callback(PerformSearch)
     reactor.add_callbacks(SingleResultFound, (MultipleResultsFound, NoResultFound))

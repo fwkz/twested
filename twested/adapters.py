@@ -19,6 +19,9 @@ class BaseDriverAdapter(object):
 
 class Selenium(BaseDriverAdapter):
     def __init__(self):
+        self.driver = None
+
+    def start(self):
         from selenium import webdriver
         self.driver = webdriver.Firefox()
 

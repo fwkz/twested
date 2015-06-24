@@ -4,8 +4,7 @@ from collections import deque, Iterable
 
 class Reactor(object):
     def __init__(self, driver_adapter):
-        self.driver_adapter = driver_adapter
-        self.driver = None
+        self.driver = driver_adapter
 
         self.callback_chain = deque()
         self.errback_chain = deque()
@@ -31,7 +30,7 @@ class Reactor(object):
 
         Check which Page Object is loaded into webdriver and execute handler that it tied with it.
         """
-        self.driver = self.driver_adapter()
+        self.driver.start()
         self.driver.navigate(entry_url)
 
         while self.callback_chain:
