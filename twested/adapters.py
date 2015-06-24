@@ -2,6 +2,10 @@ class BaseDriverAdapter(object):
     def navigate(self, url):
         raise NotImplemented()
 
+    def start(self):
+        """ Spawning actual driver instance."""
+        raise NotImplemented()
+
     @property
     def response_body(self):
         raise NotImplemented()
